@@ -1,0 +1,65 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <string name="app_name">إسعاف أولي</string>
+    <string name="app_subtitle">FirstAid Hero</string>
+
+    <!-- الشاشة الرئيسية -->
+    <string name="search_hint">ابحث عن حالة طارئة…</string>
+    <string name="common_cases_title">الحالات الأكثر شيوعاً</string>
+    <string name="no_results">لا توجد نتائج مطابقة</string>
+    <string name="no_cases">لا توجد حالات متاحة</string>
+    <string name="button_title">فتح</string>
+
+    <!-- الحالات -->
+    <string name="severity_critical">حرجة</string>
+    <string name="severity_medium">متوسطة</string>
+    <string name="severity_minor">خفيفة</string>
+
+    <string name="symptoms_label">الأعراض:</string>
+    <string name="steps_label">خطوات الإسعاف:</string>
+
+    <!-- الأزرار العامة -->
+    <string name="btn_back">رجوع</string>
+    <string name="btn_save">حفظ</string>
+    <string name="btn_cancel">إلغاء</string>
+    <string name="btn_delete">حذف</string>
+    <string name="btn_add">إضافة</string>
+    <string name="btn_call">اتصال</string>
+    <string name="btn_edit">تعديل</string>
+
+    <!-- الحالات المعالجة -->
+    <string name="treated_title">الحالات المعالجة</string>
+    <string name="add_treated_title">إضافة حالة معالجة</string>
+    <string name="edit_treated_title">تعديل الحالة</string>
+    <string name="search_treated_hint">ابحث في الحالات…</string>
+    <string name="empty_treated">لم تسجّل أي حالات بعد</string>
+    <string name="add_image">إضافة صورة</string>
+    <string name="change_image">تغيير الصورة</string>
+    <string name="remove_image">إزالة الصورة</string>
+    <string name="description_label">الوصف</string>
+    <string name="description_hint">اكتب وصفًا مختصرًا للحالة…</string>
+    <string name="date_label">التاريخ</string>
+    <string name="procedures_label">الإجراءات التي أجريت</string>
+    <string name="procedures_hint">اكتب الإجراءات التي قمت بها…</string>
+    <string name="save_success">تم الحفظ بنجاح</string>
+    <string name="delete_success">تم الحذف</string>
+    <string name="confirm_delete">هل تريد حذف هذه الحالة؟</string>
+    <string name="description_required">الوصف مطلوب</string>
+    <string name="procedures_required">الإجراءات مطلوبة</string>
+
+    <!-- الإحصاءات -->
+    <string name="stats_title">الإحصاءات والتقارير</string>
+    <string name="stats_cases_label">حالة</string>
+    <string name="stats_treated_label">معالجة</string>
+    <string name="stats_contacts_label">رقم طوارئ</string>
+    <string name="stats_by_severity">توزيع الحالات حسب الخطورة</string>
+    <string name="stats_treated_by_severity">الحالات المعالجة حسب الخطورة</string>
+    <string name="stats_by_date">البحث حسب التاريخ</string>
+    <string name="stats_pick_date">اختر التاريخ</string>
+    <string name="stats_no_data">لا توجد بيانات</string>
+    <string name="stats_cases_in_date">عدد الحالات في هذا التاريخ:</string>
+    <string name="emergency">📞 الطوارئ</string>
+    <string name="treatment">📋 المعالجة</string>
+    <string name="statistics">📊 الإحصاءات</string>
+    <string name="scan">مسح</string>
+</resources>

@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- ======= شريط العنوان مع زر رجوع ======= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/primary"
+        android:padding="@dimen/spacing_m"
+        android:gravity="center_vertical"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/white"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/btn_back" />
+
+        <TextView
+            android:id="@+id/tvToolbarTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:maxLines="1"
+            android:ellipsize="end"
+            tools:text="النزيف الحاد" />
+
+    </LinearLayout>
+
+    <!-- ======= المحتوى (قابل للتمرير) ======= -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_m">
+
+            <!-- شارة الخطورة -->
+            <TextView
+                android:id="@+id/tvSeverityBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="@dimen/spacing_m"
+                android:paddingVertical="@dimen/spacing_xs"
+                android:textSize="@dimen/text_small"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/badge_severity"
+                tools:text="حرجة" />
+
+            <!-- الأعراض -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:text="@string/symptoms_label"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                app:cardCornerRadius="@dimen/card_corner"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/card_background">
+
+                <TextView
+                    android:id="@+id/tvSymptoms"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="@dimen/spacing_m"
+                    android:textColor="@color/text_primary"
+                    android:textSize="@dimen/text_body"
+                    android:lineSpacingExtra="4dp"
+                    tools:text="خروج دم غزير من الجرح، شحوب البشرة..." />
+
+            </androidx.cardview.widget.CardView>
+
+            <!-- خطوات الإسعاف -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:text="@string/steps_label"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/containerSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

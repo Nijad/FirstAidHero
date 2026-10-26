@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- ======= شريط العنوان ======= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="@color/primary"
+        android:paddingStart="@dimen/spacing_m"
+        android:paddingEnd="@dimen/spacing_m"
+        android:paddingTop="@dimen/spacing_l"
+        android:paddingBottom="@dimen/spacing_m"
+        android:elevation="4dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_name"
+            android:textColor="@color/white"
+            android:textSize="26sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/app_subtitle"
+            android:textColor="@color/primary_light"
+            android:textSize="14sp"
+            android:layout_marginTop="2dp" />
+
+    </LinearLayout>
+
+    <!-- ======= شريط الأزرار السريعة (أفقي) ======= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/primary_dark"
+        android:paddingHorizontal="@dimen/spacing_s"
+        android:paddingVertical="@dimen/spacing_xs"
+        android:baselineAligned="false">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContacts"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/emergency"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:maxLines="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnTreated"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/treatment"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:maxLines="1" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnStats"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:text="@string/statistics"
+            android:textColor="@color/white"
+            android:textSize="13sp"
+            android:maxLines="1" />
+
+    </LinearLayout>
+
+    <!-- ======= شريط البحث الضخم ======= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/search_background"
+        android:layout_margin="@dimen/spacing_m"
+        android:paddingHorizontal="@dimen/spacing_m"
+        android:gravity="center_vertical"
+        android:elevation="3dp"
+        android:minHeight="@dimen/search_bar_height">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:src="@android:drawable/ic_menu_search"
+            app:tint="@color/text_secondary"
+            android:contentDescription="@string/search_hint" />
+
+        <EditText
+            android:id="@+id/etSearch"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_s"
+            android:autofillHints="بحث" android:background="@null"
+            android:hint="@string/search_hint"
+            android:textColorHint="@color/search_hint"
+            android:textColor="@color/text_primary"
+            android:textSize="@dimen/text_hint"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
+            android:maxLines="1" />
+
+        <ImageView
+            android:id="@+id/btnClearSearch"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/text_secondary"
+            android:visibility="gone"
+            android:contentDescription="@string/scan" />
+
+    </LinearLayout>
+
+    <!-- ======= عنوان القسم ======= -->
+    <TextView
+        android:id="@+id/tvSectionTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/common_cases_title"
+        android:textColor="@color/text_primary"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginStart="@dimen/spacing_m"
+        android:layout_marginBottom="@dimen/spacing_s" />
+
+    <!-- ======= قائمة الحالات ======= -->
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCases"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingHorizontal="@dimen/spacing_m"
+            android:clipToPadding="false"
+            android:paddingBottom="@dimen/spacing_m" />
+
+        <TextView
+            android:id="@+id/tvEmpty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:text="@string/no_cases"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_body"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>

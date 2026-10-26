@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- ======= شريط العنوان ======= -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/primary"
+        android:padding="@dimen/spacing_m"
+        android:gravity="center_vertical"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/white"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/btn_back" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:text="أرقام الطوارئ"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- ======= المحتوى ======= -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_m">
+
+            <!-- ===== قسم الأرقام العامة ===== -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="الأرقام العامة"
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvGeneral"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- ===== قسم الأرقام المخصصة ===== -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="أرقامي المخصصة"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnAddContact"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="+ إضافة"
+                    android:textSize="14sp"
+                    android:paddingHorizontal="@dimen/spacing_m"
+                    app:backgroundTint="@color/primary" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCustom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_s"
+                android:nestedScrollingEnabled="false" />
+
+            <!-- رسالة فارغة -->
+            <TextView
+                android:id="@+id/tvEmptyCustom"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:gravity="center"
+                android:padding="@dimen/spacing_l"
+                android:text="لم تُضف أي أرقام بعد"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_body"
+                android:visibility="gone" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

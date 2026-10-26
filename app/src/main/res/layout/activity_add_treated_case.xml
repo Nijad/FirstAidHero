@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background">
+
+    <!-- Toolbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="@color/primary"
+        android:padding="@dimen/spacing_m"
+        android:gravity="center_vertical"
+        android:elevation="4dp">
+
+        <ImageView
+            android:id="@+id/btnBack"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@android:drawable/ic_menu_revert"
+            app:tint="@color/white"
+            android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_m"
+            android:text="@string/add_treated_title"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <!-- Form -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/spacing_m">
+
+            <!-- صورة الحالة -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center">
+
+                <ImageView
+                    android:id="@+id/ivPhoto"
+                    android:layout_width="160dp"
+                    android:layout_height="160dp"
+                    android:scaleType="centerCrop"
+                    android:background="@drawable/image_placeholder"
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:contentDescription="@string/add_image"
+                    app:tint="@color/text_secondary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnPickPhoto"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_s"
+                    android:text="@string/add_image"
+                    android:textColor="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnRemovePhoto"
+                    style="@style/Widget.Material3.Button.TextButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/remove_image"
+                    android:textColor="@color/severity_critical"
+                    android:visibility="gone" />
+
+            </LinearLayout>
+
+            <!-- الوصف -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:hint="@string/description_label">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/description_hint"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top|start" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- التاريخ -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:hint="@string/date_label"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:focusable="false"
+                    android:clickable="true"
+                    android:cursorVisible="false"
+                    android:inputType="none" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- الإجراءات -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_m"
+                android:hint="@string/procedures_label">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etProcedures"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/procedures_hint"
+                    android:inputType="textMultiLine"
+                    android:minLines="3"
+                    android:gravity="top|start" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <!-- أزرار -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/spacing_l"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSave"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/btn_save"
+                    app:backgroundTint="@color/primary" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:layout_marginStart="@dimen/spacing_s"
+                    android:text="@string/btn_cancel" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

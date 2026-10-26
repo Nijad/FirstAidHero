@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_s"
+    app:cardCornerRadius="@dimen/card_corner"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="@color/card_background">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/spacing_m">
+
+        <!-- Row: التاريخ + أزرار -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textColor="@color/primary"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                tools:text="2026-10-10" />
+
+            <ImageView
+                android:id="@+id/btnEdit"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@android:drawable/ic_menu_edit"
+                app:tint="@color/text_secondary"
+                android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+            <ImageView
+                android:id="@+id/btnDelete"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@android:drawable/ic_menu_delete"
+                app:tint="@color/severity_critical"
+                android:background="?android:attr/selectableItemBackgroundBorderless" />
+
+        </LinearLayout>
+
+        <!-- Row: صورة + وصف -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/ivPhoto"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:scaleType="centerCrop"
+                android:background="@color/divider"
+                android:visibility="gone"
+                android:contentDescription="صورة الحالة" />
+
+            <TextView
+                android:id="@+id/tvDescription"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="0dp"
+                android:textColor="@color/text_primary"
+                android:textSize="15sp"
+                android:maxLines="3"
+                android:ellipsize="end"
+                tools:text="شخص تعرض لجرح في يده" />
+
+        </LinearLayout>
+
+        <!-- الإجراءات -->
+        <TextView
+            android:id="@+id/tvProcedures"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_s"
+            android:padding="@dimen/spacing_s"
+            android:background="#F5F5F5"
+            android:textColor="@color/text_secondary"
+            android:textSize="14sp"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="3"
+            android:ellipsize="end"
+            tools:text="الإجراءات: تم تعقيم الجرح ووضع ضمادة" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>
