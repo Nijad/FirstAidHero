@@ -63,8 +63,7 @@
                     android:scaleType="centerCrop"
                     android:background="@drawable/image_placeholder"
                     android:src="@android:drawable/ic_menu_gallery"
-                    android:contentDescription="@string/add_image"
-                    app:tint="@color/text_secondary" />
+                    android:contentDescription="@string/add_image" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPickPhoto"

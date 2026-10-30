@@ -1,12 +1,12 @@
 package com.svu.firstaidhero.ui.treated;
 
-import android.Manifest;
 import android.app.DatePickerDialog;
 import android.content.Intent;
-import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -14,8 +14,11 @@ import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
@@ -28,14 +31,14 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.UUID;
-
-import android.graphics.Bitmap;
-import android.util.Log;
 
 public class AddTreatedCaseActivity extends AppCompatActivity {
 
+    private static final String TAG = "AddTreatedCase";
     public static final String EXTRA_ID = "extra_treated_id";
 
     private FirstAidRepository repo;
@@ -47,18 +50,18 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
 
     private int editingId = -1;      // -1 = إضافة جديدة
     private String currentPhotoPath; // مسار الصورة الحالية
+    private File cameraPhotoFile;    // ملف الكاميرا المؤقت
 
-    private ActivityResultLauncher<Uri> takePictureLauncher;
-    private Uri cameraImageUri;
-    private ActivityResultLauncher<String> requestCameraPermission;
+    // ====== مشغلات النتائج (Activity Result Launchers) ======
 
-    // منتقي الصور الحديث
-    private final ActivityResultLauncher<String> pickImage =
-            registerForActivityResult(new ActivityResultContracts.GetContent(), uri -> {
+    // 1. اختيار صورة من المعرض
+    private final ActivityResultLauncher<String> pickImage = registerForActivityResult(
+            new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
                     String saved = copyImageToInternalStorage(uri);
                     if (saved != null) {
                         currentPhotoPath = saved;
+                        ivPhoto.setImageTintList(null);
                         ivPhoto.setImageBitmap(BitmapFactory.decodeFile(saved));
                         btnRemovePhoto.setVisibility(View.VISIBLE);
                         btnPickPhoto.setText(R.string.change_image);
@@ -68,6 +71,32 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 }
             });
 
+    // 2. التقاط صورة بالكاميرا
+    private final ActivityResultLauncher<Uri> takePictureLauncher = registerForActivityResult(
+            new ActivityResultContracts.TakePicture(), success -> {
+                if (success && cameraPhotoFile != null && cameraPhotoFile.exists()) {
+                    currentPhotoPath = cameraPhotoFile.getAbsolutePath();
+                    ivPhoto.setImageTintList(null);
+                    ivPhoto.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath));
+                    btnRemovePhoto.setVisibility(View.VISIBLE);
+                    btnPickPhoto.setText(R.string.change_image);
+                } else {
+                    Toast.makeText(this, "لم يتم التقاط الصورة", Toast.LENGTH_SHORT).show();
+                }
+            });
+
+    // 3. طلب إذن الكاميرا
+    private final ActivityResultLauncher<String> requestCameraPermission = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    openCamera();
+                } else {
+                    Toast.makeText(this, "يجب السماح بالوصول للكاميرا لالتقاط الصور", Toast.LENGTH_LONG).show();
+                }
+            });
+
+    // ====== دورة حياة النشاط (Lifecycle) ======
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,6 +104,7 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
 
         repo = FirstAidRepository.getInstance(this);
 
+        // ربط العناصر
         ivPhoto = findViewById(R.id.ivPhoto);
         btnPickPhoto = findViewById(R.id.btnPickPhoto);
         btnRemovePhoto = findViewById(R.id.btnRemovePhoto);
@@ -90,35 +120,21 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
         // التاريخ الافتراضي = اليوم
         etDate.setText(DateUtils.today());
 
-        // منتقي التاريخ
+        // إعداد منتقي التاريخ
         etDate.setOnClickListener(v -> showDatePicker());
 
-        // إعداد الكاميرا
-        takePictureLauncher = registerForActivityResult(new ActivityResultContracts.TakePicture(), success -> {
-            if (success && cameraImageUri != null) {
-                currentPhotoPath = cameraImageUri.getPath(); // المسار الفعلي
-                ivPhoto.setImageURI(cameraImageUri);
-                btnRemovePhoto.setVisibility(View.VISIBLE);
-                btnPickPhoto.setText(R.string.change_image);
-            }
-        });
-
-        requestCameraPermission = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
-            if (isGranted) openCamera();
-            else Toast.makeText(this, "يجب السماح بالوصول للكاميرا", Toast.LENGTH_SHORT).show();
-        });
-
-        // عند الضغط على زر إضافة صورة، نعرض خيار (المعرض أم الكاميرا)
+        // إعداد زر إضافة الصورة (يظهر خيار الكاميرا أو المعرض)
         btnPickPhoto.setOnClickListener(v -> {
-            String[] options = {"الكاميرا", "معرض الصور"};
-            new android.app.AlertDialog.Builder(this)
-                    .setTitle("اختر مصدر الصورة")
+            String[] options = {"التقاط صورة بالكاميرا", "اختيار من المعرض"};
+            new AlertDialog.Builder(this)
+                    .setTitle("إضافة صورة")
                     .setItems(options, (dialog, which) -> {
                         if (which == 0) {
-                            if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+                            // التحقق من إذن الكاميرا
+                            if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                                 openCamera();
                             } else {
-                                requestCameraPermission.launch(Manifest.permission.CAMERA);
+                                requestCameraPermission.launch(android.Manifest.permission.CAMERA);
                             }
                         } else {
                             pickImage.launch("image/*");
@@ -126,62 +142,29 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                     }).show();
         });
 
-        // اختيار الصورة
-        btnPickPhoto.setOnClickListener(v -> pickImage.launch("image/*"));
-
         // إزالة الصورة
         btnRemovePhoto.setOnClickListener(v -> {
             currentPhotoPath = null;
+            // إعادة تلوين الأيقونة الرمادية
+            ivPhoto.setImageTintList(android.content.res.ColorStateList.valueOf(
+                    androidx.core.content.ContextCompat.getColor(this, R.color.text_secondary)));
             ivPhoto.setImageResource(android.R.drawable.ic_menu_gallery);
             btnPickPhoto.setText(R.string.add_image);
             btnRemovePhoto.setVisibility(View.GONE);
         });
 
-        // حفظ
+        // حفظ وإلغاء
         btnSave.setOnClickListener(v -> save());
-
-        // إلغاء
         btnCancel.setOnClickListener(v -> finish());
 
-        // إذا كان تعديلًا
+        // التحقق من وضع التعديل
         editingId = getIntent().getIntExtra(EXTRA_ID, -1);
         if (editingId != -1) {
             loadExisting(editingId);
         }
     }
 
-    private void openCamera() {
-        try {
-            File dir = new File(getFilesDir(), "treated_photos");
-            if (!dir.exists()) dir.mkdirs();
-            File photoFile = new File(dir, "cam_" + UUID.randomUUID() + ".jpg");
-            cameraImageUri = androidx.core.content.FileProvider.getUriForFile(
-                    this, getPackageName() + ".file-provider", photoFile);
-            takePictureLauncher.launch(cameraImageUri);
-        } catch (Exception e) {
-            Toast.makeText(this, "فشل فتح الكاميرا", Toast.LENGTH_SHORT).show();
-            e.printStackTrace();
-        }
-    }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 102 && resultCode == RESULT_OK) {
-            // الصورة التقطت، سنحتاج للبحث عنها في المجلد
-            File dir = new File(getFilesDir(), "treated_photos");
-            File[] files = dir.listFiles();
-            if (files != null && files.length > 0) {
-                // نأخذ أحدث ملف
-                File latest = files[0];
-                for (File f : files) { if (f.lastModified() > latest.lastModified()) latest = f; }
-                currentPhotoPath = latest.getAbsolutePath();
-                ivPhoto.setImageBitmap(BitmapFactory.decodeFile(currentPhotoPath));
-                btnRemovePhoto.setVisibility(View.VISIBLE);
-                btnPickPhoto.setText(R.string.change_image);
-            }
-        }
-    }
+    // ====== الوظائف المساعدة ======
 
     private void loadExisting(int id) {
         TreatedCase t = repo.treated().getById(id);
@@ -203,7 +186,7 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
     private void showDatePicker() {
         Calendar c = Calendar.getInstance();
         new DatePickerDialog(this, (view, y, m, d) -> {
-            String date = String.format("%04d-%02d-%02d", y, m + 1, d);
+            String date = String.format(Locale.US, "%04d-%02d-%02d", y, m + 1, d);
             etDate.setText(date);
         }, c.get(Calendar.YEAR), c.get(Calendar.MONTH), c.get(Calendar.DAY_OF_MONTH)).show();
     }
@@ -220,7 +203,7 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
             return;
         }
         if (desc.length() > 1000) {
-            etDescription.setError("الوصف طويل جدًا (1000 حرف كحد أقصى)");
+            etDescription.setError("الوصف طويل جداً (1000 حرف كحد أقصى)");
             return;
         }
         if (proc.isEmpty()) {
@@ -229,7 +212,7 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
             return;
         }
         if (proc.length() > 2000) {
-            etProcedures.setError("الإجراءات طويلة جدًا (2000 حرف كحد أقصى)");
+            etProcedures.setError("الإجراءات طويلة جداً (2000 حرف كحد أقصى)");
             return;
         }
         if (!isValidDate(date)) {
@@ -249,16 +232,19 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
             setResult(RESULT_OK);
             finish();
         } catch (Exception e) {
-            Toast.makeText(this, "فشل الحفظ: " + e.getMessage(),
-                    Toast.LENGTH_LONG).show();
+            Log.e(TAG, "Save failed", e);
+            Toast.makeText(this, "فشل الحفظ: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
+    }
+
+    private String text(TextInputEditText et) {
+        return et.getText() == null ? "" : et.getText().toString().trim();
     }
 
     private boolean isValidDate(String date) {
         if (date == null || date.length() != 10) return false;
         try {
-            java.text.SimpleDateFormat sdf =
-                    new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
             sdf.setLenient(false);
             sdf.parse(date);
             return true;
@@ -267,23 +253,44 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
         }
     }
 
-    private String text(TextInputEditText et) {
-        return et.getText() == null ? "" : et.getText().toString().trim();
+    // ====== إدارة الصور (الكاميرا والمعرض) ======
+
+    private void openCamera() {
+        try {
+            File dir = new File(getFilesDir(), "treated_photos");
+            if (!dir.exists()) {
+                if (!dir.mkdirs()) {
+                    Log.e(TAG, "Failed to create directory");
+                    return;
+                }
+            }
+
+            cameraPhotoFile = new File(dir, "cam_" + UUID.randomUUID() + ".jpg");
+
+            Uri uri = FileProvider.getUriForFile(
+                    this,
+                    getPackageName() + ".fileprovider",
+                    cameraPhotoFile
+            );
+
+            takePictureLauncher.launch(uri);
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error opening camera", e);
+            Toast.makeText(this, "فشل فتح الكاميرا", Toast.LENGTH_SHORT).show();
+        }
     }
 
     /**
-     * نسخ الصورة المختارة مع ضغطها لتجنّب OOM.
+     * نسخ الصورة المختارة من المعرض مع ضغطها لتجنّب OOM.
      */
     private String copyImageToInternalStorage(Uri src) {
         try {
             File dir = new File(getFilesDir(), "treated_photos");
-            if (!dir.exists() && !dir.mkdirs()) {
-                Log.e("AddTreated", "Cannot create photos dir");
-                return null;
-            }
+            if (!dir.exists() && !dir.mkdirs()) return null;
             File dst = new File(dir, "img_" + UUID.randomUUID() + ".jpg");
 
-            // 1) فك أبعاد الصورة أولًا (بدون تحميلها كاملة)
+            // 1. قراءة الأبعاد
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inJustDecodeBounds = true;
             try (InputStream boundsIn = getContentResolver().openInputStream(src)) {
@@ -291,14 +298,14 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 BitmapFactory.decodeStream(boundsIn, null, opts);
             }
 
-            // 2) حساب نسبة التصغير (بحد أقصى 1024 بكسل)
+            // 2. حساب التصغير
             int maxDim = 1024;
             int sample = 1;
             while (opts.outWidth / sample > maxDim || opts.outHeight / sample > maxDim) {
                 sample *= 2;
             }
 
-            // 3) تحميل الصورة مع التصغير
+            // 3. تحميل الصورة
             BitmapFactory.Options decodeOpts = new BitmapFactory.Options();
             decodeOpts.inSampleSize = sample;
             Bitmap bitmap;
@@ -306,12 +313,9 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 if (in == null) return null;
                 bitmap = BitmapFactory.decodeStream(in, null, decodeOpts);
             }
-            if (bitmap == null) {
-                Log.e("AddTreated", "Failed to decode bitmap");
-                return null;
-            }
+            if (bitmap == null) return null;
 
-            // 4) ضغط وحفظ
+            // 4. ضغط وحفظ
             try (OutputStream out = new FileOutputStream(dst)) {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
             }
@@ -319,7 +323,7 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
 
             return dst.getAbsolutePath();
         } catch (Exception e) {
-            Log.e("AddTreated", "copyImage failed", e);
+            Log.e(TAG, "copyImage failed", e);
             return null;
         }
     }

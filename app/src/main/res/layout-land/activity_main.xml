@@ -3,48 +3,48 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background">
+    android:background="@color/background"
+    android:orientation="vertical">
 
     <!-- ======= شريط العنوان ======= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:background="@color/primary"
+        android:elevation="4dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingStart="@dimen/spacing_m"
+        android:paddingTop="@dimen/spacing_s"
         android:paddingEnd="@dimen/spacing_m"
-        android:paddingTop="@dimen/spacing_l"
-        android:paddingBottom="@dimen/spacing_m"
-        android:elevation="4dp">
+        android:paddingBottom="@dimen/spacing_s">
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/app_name"
             android:textColor="@color/white"
-            android:textSize="26sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_s"
             android:text="@string/app_subtitle"
             android:textColor="@color/primary_light"
-            android:textSize="14sp"
-            android:layout_marginTop="2dp" />
-
+            android:textSize="14sp" />
     </LinearLayout>
 
     <!-- ======= شريط الأزرار السريعة (أفقي) ======= -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:background="@color/primary_dark"
+        android:baselineAligned="false"
+        android:orientation="horizontal"
         android:paddingHorizontal="@dimen/spacing_s"
-        android:paddingVertical="@dimen/spacing_xs"
-        android:baselineAligned="false">
+        android:paddingVertical="@dimen/spacing_xs">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnContacts"
@@ -52,14 +52,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minWidth="0dp"
-            android:paddingHorizontal="4dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="4dp"
             android:text="📞 الطوارئ"
             android:textColor="@color/white"
-            android:textSize="13sp"
-            android:maxLines="1" />
+            android:textSize="13sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnTreated"
@@ -67,14 +67,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minWidth="0dp"
-            android:paddingHorizontal="4dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="4dp"
             android:text="📋 المعالجة"
             android:textColor="@color/white"
-            android:textSize="13sp"
-            android:maxLines="1" />
+            android:textSize="13sp" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStats"
@@ -82,14 +82,14 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minWidth="0dp"
-            android:paddingHorizontal="4dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
+            android:maxLines="1"
+            android:minWidth="0dp"
+            android:paddingHorizontal="4dp"
             android:text="📊 الإحصاءات"
             android:textColor="@color/white"
-            android:textSize="13sp"
-            android:maxLines="1" />
+            android:textSize="13sp" />
 
     </LinearLayout>
 
@@ -100,22 +100,25 @@
         android:orientation="horizontal"
         android:background="@color/search_background"
         android:layout_margin="@dimen/spacing_m"
-        android:paddingHorizontal="@dimen/spacing_m"
+        android:paddingHorizontal="@dimen/spacing_s"
         android:gravity="center_vertical"
         android:elevation="3dp"
         android:minHeight="@dimen/search_bar_height">
 
+        <!-- أيقونة البحث (تم تكبير مساحة اللمس) -->
         <ImageView
-            android:layout_width="28dp"
-            android:layout_height="28dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="10dp"
             android:src="@android:drawable/ic_menu_search"
             app:tint="@color/text_secondary"
             android:contentDescription="@string/search_hint" />
 
+        <!-- حقل البحث (تم تكبير الارتفاع) -->
         <EditText
             android:id="@+id/etSearch"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_weight="1"
             android:layout_marginStart="@dimen/spacing_s"
             android:background="@null"
@@ -125,14 +128,18 @@
             android:textSize="@dimen/text_hint"
             android:imeOptions="actionSearch"
             android:inputType="text"
+            android:gravity="center_vertical"
             android:maxLines="1" />
 
+        <!-- زر المسح (تم تكبير مساحة اللمس) -->
         <ImageView
             android:id="@+id/btnClearSearch"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
             app:tint="@color/text_secondary"
+            android:background="?android:attr/selectableItemBackgroundBorderless"
             android:visibility="gone"
             android:contentDescription="مسح" />
 
@@ -143,12 +150,12 @@
         android:id="@+id/tvSectionTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_m"
+        android:layout_marginBottom="@dimen/spacing_s"
         android:text="@string/common_cases_title"
         android:textColor="@color/text_primary"
         android:textSize="18sp"
-        android:textStyle="bold"
-        android:layout_marginStart="@dimen/spacing_m"
-        android:layout_marginBottom="@dimen/spacing_s" />
+        android:textStyle="bold" />
 
     <!-- ======= قائمة الحالات ======= -->
     <FrameLayout
@@ -160,8 +167,8 @@
             android:id="@+id/rvCases"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:paddingHorizontal="@dimen/spacing_m"
             android:clipToPadding="false"
+            android:paddingHorizontal="@dimen/spacing_m"
             android:paddingBottom="@dimen/spacing_m" />
 
         <TextView
