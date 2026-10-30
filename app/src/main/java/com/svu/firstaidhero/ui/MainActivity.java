@@ -64,6 +64,14 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnStats).setOnClickListener(v -> startActivity(new android.content.Intent(this,
                 com.svu.firstaidhero.ui.stats.StatsActivity.class)));
 
+        // إعداد الزر العائم لفتح صفحة أرقام الطوارئ
+        com.google.android.material.floatingactionbutton.FloatingActionButton fabEmergencyCall = findViewById(R.id.fabEmergencyCall);
+        fabEmergencyCall.setOnClickListener(v -> {
+            // الانتقال إلى صفحة جهات الاتصال
+            android.content.Intent intent = new android.content.Intent(this, com.svu.firstaidhero.ui.contacts.ContactsActivity.class);
+            startActivity(intent);
+        });
+
         // إجبار التطبيق على RTL
         getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
     }
