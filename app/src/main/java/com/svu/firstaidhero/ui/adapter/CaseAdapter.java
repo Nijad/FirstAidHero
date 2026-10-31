@@ -18,10 +18,14 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Adapter لعرض قائمة حالات الإسعاف.
+ * RecyclerView Adapter for displaying the list of first aid cases.
+ * Binds FirstAidCase data to the UI and handles user interactions.
  */
 public class CaseAdapter extends RecyclerView.Adapter<CaseAdapter.VH> {
 
+    /**
+     * Listener interface for handling item click events.
+     */
     public interface OnCaseClickListener {
         void onCaseClick(FirstAidCase c);
     }
@@ -29,10 +33,20 @@ public class CaseAdapter extends RecyclerView.Adapter<CaseAdapter.VH> {
     private final List<FirstAidCase> items = new ArrayList<>();
     private final OnCaseClickListener listener;
 
+    /**
+     * Constructs a new CaseAdapter.
+     *
+     * @param listener The callback to be invoked when a case is clicked.
+     */
     public CaseAdapter(OnCaseClickListener listener) {
         this.listener = listener;
     }
 
+    /**
+     * Updates the list of items and refreshes the RecyclerView.
+     *
+     * @param newItems The new list of FirstAidCase objects to display.
+     */
     @SuppressLint("NotifyDataSetChanged")
     public void setItems(List<FirstAidCase> newItems) {
         items.clear();
@@ -40,6 +54,9 @@ public class CaseAdapter extends RecyclerView.Adapter<CaseAdapter.VH> {
         notifyDataSetChanged();
     }
 
+    /**
+     * Creates the ViewHolder for individual list items by inflating the layout.
+     */
     @NonNull
     @Override
     public VH onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -48,12 +65,17 @@ public class CaseAdapter extends RecyclerView.Adapter<CaseAdapter.VH> {
         return new VH(v);
     }
 
+    /**
+     * Binds the data of a specific FirstAidCase to the ViewHolder.
+     * Updates the title, severity label, and changes the dot color based on the severity level.
+     */
     @Override
     public void onBindViewHolder(@NonNull VH h, int position) {
         FirstAidCase item = items.get(position);
         h.tvTitle.setText(item.getTitle());
 
         int colorRes;
+        // Determine the color and string resource based on the case severity
         int labelRes = switch (item.getSeverity()) {
             case "critical" -> {
                 colorRes = R.color.severity_critical;
@@ -73,14 +95,23 @@ public class CaseAdapter extends RecyclerView.Adapter<CaseAdapter.VH> {
         h.severityDot.setBackgroundTintList(ColorStateList.valueOf(color));
         h.tvSeverityLabel.setText(labelRes);
 
+        // Handle item click
         h.itemView.setOnClickListener(v -> {
             if (listener != null) listener.onCaseClick(item);
         });
     }
 
+    /**
+     * Returns the total number of items in the data set.
+     */
     @Override
-    public int getItemCount() { return items.size(); }
+    public int getItemCount() {
+        return items.size();
+    }
 
+    /**
+     * ViewHolder class to cache the views within each list item layout.
+     */
     static class VH extends RecyclerView.ViewHolder {
         final TextView tvTitle;
         final TextView tvSeverityLabel;

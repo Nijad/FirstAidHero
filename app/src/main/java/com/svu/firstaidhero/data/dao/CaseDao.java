@@ -10,9 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * كل عمليات القراءة والكتابة على جدولي:
- * - FirstAidCases
- * - ActionSteps
+ * Data Access Object (DAO) for handling all read/write operations
+ * related to the 'FirstAidCases' and 'ActionSteps' tables.
  */
 public class CaseDao {
 
@@ -24,7 +23,12 @@ public class CaseDao {
 
     // ================= FirstAidCases =================
 
-    /** جميع الحالات (الأكثر شيوعًا أولاً). */
+    /**
+     * Retrieves all first aid cases from the database.
+     * Common cases (is_common = 1) are prioritized, then sorted alphabetically by title.
+     *
+     * @return List of all FirstAidCase objects.
+     */
     public List<FirstAidCase> getAllCases() {
         List<FirstAidCase> list = new ArrayList<>();
         try (Cursor c = db.rawQuery(
@@ -36,7 +40,12 @@ public class CaseDao {
         return list;
     }
 
-    /** الحالات الشائعة فقط (للقائمة الافتراضية في الشاشة الرئيسية). */
+    /**
+     * Retrieves only the most common first aid cases.
+     * Used for the default list displayed on the main screen.
+     *
+     * @return List of common FirstAidCase objects.
+     */
     public List<FirstAidCase> getCommonCases() {
         List<FirstAidCase> list = new ArrayList<>();
         try (Cursor c = db.rawQuery(
@@ -49,21 +58,26 @@ public class CaseDao {
     }
 
     /**
-     * بحث فوري ذكي: يطابق العنوان أو الأعراض أو الكلمات المفتاحية.
+     * Performs an instant smart search across title, symptoms, and keywords.
+     * Handles Arabic prefixes (like "ال") to improve search accuracy.
+     *
+     * @param query The search term entered by the user.
+     * @return List of FirstAidCase objects matching the query.
      */
     public List<FirstAidCase> searchCases(String query) {
         List<FirstAidCase> list = new ArrayList<>();
         if (query == null) query = "";
         query = query.trim();
 
+        // Return all cases if the search query is empty
         if (query.isEmpty()) {
             return getAllCases();
         }
 
-        // نُجرّب أكثر من نمط: الكلمة كما هي، ومع "ال" بادئة، وبدونها
+        // Prepare different patterns to handle the Arabic definite article "ال"
         String base = query;
         if (base.startsWith("ال") && base.length() > 2) {
-            base = base.substring(2);  // "الحروق" → "حروق"
+            base = base.substring(2);  // Example: "الحروق" becomes "حروق"
         }
         String patternRaw = "%" + query + "%";
         String patternNoAl = "%" + base + "%";
@@ -86,7 +100,12 @@ public class CaseDao {
         return list;
     }
 
-    /** جلب حالة واحدة بالمعرّف. */
+    /**
+     * Retrieves a specific first aid case by its unique ID.
+     *
+     * @param id The unique identifier of the case.
+     * @return The FirstAidCase object, or null if not found.
+     */
     public FirstAidCase getCaseById(int id) {
         try (Cursor c = db.rawQuery(
                 "SELECT id, title, symptoms, severity, is_common " +
@@ -99,7 +118,12 @@ public class CaseDao {
 
     // ================= ActionSteps =================
 
-    /** جميع خطوات حالة معيّنة، مرتبة تصاعديًا. */
+    /**
+     * Retrieves all action steps for a specific case, ordered by step number.
+     *
+     * @param caseId The ID of the parent case.
+     * @return List of ActionStep objects.
+     */
     public List<ActionStep> getStepsForCase(int caseId) {
         List<ActionStep> list = new ArrayList<>();
         try (Cursor c = db.rawQuery(
@@ -119,8 +143,14 @@ public class CaseDao {
         return list;
     }
 
-    // ================= مساعد =================
+    // ================= Helper Methods =================
 
+    /**
+     * Helper method to map a database Cursor row to a FirstAidCase object.
+     *
+     * @param c The Cursor pointing to the current row.
+     * @return A populated FirstAidCase object.
+     */
     private FirstAidCase fromCursor(Cursor c) {
         return new FirstAidCase(
                 c.getInt(c.getColumnIndexOrThrow("id")),

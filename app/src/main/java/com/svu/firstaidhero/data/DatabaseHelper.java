@@ -13,8 +13,9 @@ import java.io.InputStreamReader;
 /**
  * DatabaseHelper
  * --------------
- * ينشئ قاعدة بيانات FirstAid Hero من سكربت SQL موجود في
- * assets/databases/firstaid_setup.sql عند أول تشغيل للتطبيق.
+ * Helper class for managing the SQLite database.
+ * Initializes the "FirstAid Hero" database from a pre-populated SQL script
+ * located at 'assets/databases/firstaid_setup.sql' on the first app run.
  */
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -29,7 +30,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static DatabaseHelper instance;
 
-    /** مفرد (Singleton) لتفادي فتح عدة اتصالات بنفس القاعدة */
+    /**
+     * Singleton pattern to prevent opening multiple connections to the same database.
+     *
+     * @param ctx The application context.
+     * @return The single instance of DatabaseHelper.
+     */
     public static synchronized DatabaseHelper getInstance(Context ctx) {
         if (instance == null) {
             instance = new DatabaseHelper(ctx.getApplicationContext());
@@ -42,16 +48,25 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         this.context = context;
     }
 
+    /**
+     * Called when the database is created for the first time.
+     * Executes the initialization script from the assets folder.
+     */
     @Override
     public void onCreate(SQLiteDatabase db) {
         executeScriptFromAssets(db, SCRIPT_PATH);
     }
 
+    /**
+     * Called when the database needs to be upgraded (version increment).
+     * Preserves user data, drops old tables, recreates them via the new script,
+     * and then restores the preserved user data.
+     */
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.w(TAG, "Upgrading DB from " + oldVersion + " to " + newVersion);
 
-        // نحافظ على بيانات المستخدم قبل الحذف
+        // Preserve user data before dropping tables
         db.execSQL("CREATE TABLE IF NOT EXISTS _tmp_contacts AS " +
                 "SELECT * FROM EmergencyContacts WHERE type='custom'");
         db.execSQL("CREATE TABLE IF NOT EXISTS _tmp_treated AS " +
@@ -64,7 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
         onCreate(db);
 
-        // استرجاع بيانات المستخدم
+        // Restore preserved user data
         db.execSQL("INSERT INTO EmergencyContacts (name, phone, type, category) " +
                 "SELECT name, phone, type, category FROM _tmp_contacts");
         db.execSQL("INSERT INTO TreatedCases (case_id, description, date, photo_path, procedures) " +
@@ -74,6 +89,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL("DROP TABLE IF EXISTS _tmp_treated");
     }
 
+    /**
+     * Reads the SQL script from the assets folder, splits it into individual statements,
+     * and executes them within a single transaction for efficiency and data integrity.
+     *
+     * @param db        The SQLiteDatabase instance.
+     * @param assetPath The path to the SQL script in the assets folder.
+     */
     private void executeScriptFromAssets(SQLiteDatabase db, String assetPath) {
         BufferedReader reader = null;
         try {
@@ -84,6 +106,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String line;
             while ((line = reader.readLine()) != null) {
                 String trimmed = line.trim();
+                // Ignore empty lines and SQL comments
                 if (trimmed.isEmpty() || trimmed.startsWith("--")) continue;
                 builder.append(line).append("\n");
             }
@@ -101,7 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         executed++;
                     } catch (Exception e) {
                         failed++;
-                        // لا نوقف العملية بسبب جملة واحدة
+                        // Log the error but continue executing other statements to avoid total failure
                         Log.w(TAG, "Statement failed: " + sql.substring(0,
                                 Math.min(80, sql.length())) + " | " + e.getMessage());
                     }
@@ -113,7 +136,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         } catch (IOException e) {
             Log.e(TAG, "Failed to read SQL script from assets", e);
-            // لا نرمي استثناء — ننشئ الجداول يدويًا كخطة بديلة
+            // Do not throw an exception; instead, create tables manually as a fallback mechanism
             createTablesManually(db);
         } finally {
             if (reader != null) {
@@ -122,7 +145,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    /** خطة بديلة عند فشل قراءة assets. */
+    /**
+     * Fallback method to create tables manually if the asset script fails to load.
+     * Ensures the app remains functional with empty tables rather than crashing.
+     *
+     * @param db The SQLiteDatabase instance.
+     */
     private void createTablesManually(SQLiteDatabase db) {
         Log.w(TAG, "Creating tables manually (fallback)");
         db.execSQL("CREATE TABLE IF NOT EXISTS FirstAidCases (" +

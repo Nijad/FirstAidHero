@@ -82,25 +82,34 @@
                     android:text="@string/remove_image"
                     android:textColor="@color/severity_critical"
                     android:visibility="gone" />
-
             </LinearLayout>
+
+            <!-- قائمة اختيار نوع الحالة -->
+            <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                android:id="@+id/spinnerCaseType"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="none"
+                android:focusable="false"
+                android:clickable="true"
+                android:cursorVisible="false"
+                android:textSize="16sp" />
 
             <!-- الوصف -->
             <com.google.android.material.textfield.TextInputLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_l"
-                android:hint="@string/description_label">
+                android:hint="@string/description_label"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etDescription"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/description_hint"
                     android:inputType="textMultiLine"
                     android:minLines="3"
                     android:gravity="top|start" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- التاريخ -->
@@ -119,7 +128,6 @@
                     android:clickable="true"
                     android:cursorVisible="false"
                     android:inputType="none" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- الإجراءات -->
@@ -127,17 +135,16 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="@dimen/spacing_m"
-                android:hint="@string/procedures_label">
+                android:hint="@string/procedures_label"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etProcedures"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="@string/procedures_hint"
                     android:inputType="textMultiLine"
                     android:minLines="3"
                     android:gravity="top|start" />
-
             </com.google.android.material.textfield.TextInputLayout>
 
             <!-- أزرار -->

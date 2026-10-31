@@ -31,6 +31,9 @@
         android:textColor="@color/text_primary"
         android:textSize="17sp"
         android:lineSpacingExtra="4dp"
+        android:includeFontPadding="true"
+        android:paddingBottom="8dp"
+        android:breakStrategy="high_quality"
         tools:text="ارتدِ قفازات نظيفة إن أمكن لحماية نفسك" />
 
 </LinearLayout>

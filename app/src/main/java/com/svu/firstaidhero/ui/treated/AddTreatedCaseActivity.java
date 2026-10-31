@@ -1,29 +1,30 @@
 package com.svu.firstaidhero.ui.treated;
 
 import android.app.DatePickerDialog;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.textfield.MaterialAutoCompleteTextView;
 import com.google.android.material.textfield.TextInputEditText;
 import com.svu.firstaidhero.R;
 import com.svu.firstaidhero.data.FirstAidRepository;
+import com.svu.firstaidhero.model.FirstAidCase;
 import com.svu.firstaidhero.model.TreatedCase;
 import com.svu.firstaidhero.util.DateUtils;
 
@@ -32,10 +33,17 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
+/**
+ * Activity responsible for adding a new treated case or editing an existing one.
+ * Handles data validation, database insertion/update, date picking,
+ * image attachment via camera or gallery, and linking to a predefined FirstAidCase.
+ */
 public class AddTreatedCaseActivity extends AppCompatActivity {
 
     private static final String TAG = "AddTreatedCase";
@@ -43,18 +51,23 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
 
     private FirstAidRepository repo;
 
+    // UI Components
     private ImageView ivPhoto;
-    private MaterialButton btnPickPhoto, btnRemovePhoto, btnSave, btnCancel;
+    private MaterialButton btnPickPhoto, btnRemovePhoto;
     private TextInputEditText etDescription, etDate, etProcedures;
     private TextView tvTitle;
+    private MaterialAutoCompleteTextView spinnerCaseType;
 
-    private int editingId = -1;      // -1 = إضافة جديدة
-    private String currentPhotoPath; // مسار الصورة الحالية
-    private File cameraPhotoFile;    // ملف الكاميرا المؤقت
+    private int editingId = -1;
+    private String currentPhotoPath;
+    private File cameraPhotoFile;
 
-    // ====== مشغلات النتائج (Activity Result Launchers) ======
+    // Variables for Case Selection
+    private List<FirstAidCase> allCasesList = new ArrayList<>();
+    private Integer selectedCaseId = null; // null means "Unlinked / Other"
 
-    // 1. اختيار صورة من المعرض
+    // ====== Activity Result Launchers ======
+
     private final ActivityResultLauncher<String> pickImage = registerForActivityResult(
             new ActivityResultContracts.GetContent(), uri -> {
                 if (uri != null) {
@@ -71,7 +84,6 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 }
             });
 
-    // 2. التقاط صورة بالكاميرا
     private final ActivityResultLauncher<Uri> takePictureLauncher = registerForActivityResult(
             new ActivityResultContracts.TakePicture(), success -> {
                 if (success && cameraPhotoFile != null && cameraPhotoFile.exists()) {
@@ -85,7 +97,6 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 }
             });
 
-    // 3. طلب إذن الكاميرا
     private final ActivityResultLauncher<String> requestCameraPermission = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -95,7 +106,7 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 }
             });
 
-    // ====== دورة حياة النشاط (Lifecycle) ======
+    // ====== Lifecycle ======
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -104,33 +115,32 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
 
         repo = FirstAidRepository.getInstance(this);
 
-        // ربط العناصر
+        // Bind UI components
         ivPhoto = findViewById(R.id.ivPhoto);
         btnPickPhoto = findViewById(R.id.btnPickPhoto);
         btnRemovePhoto = findViewById(R.id.btnRemovePhoto);
-        btnSave = findViewById(R.id.btnSave);
-        btnCancel = findViewById(R.id.btnCancel);
+        MaterialButton btnSave = findViewById(R.id.btnSave);
+        MaterialButton btnCancel = findViewById(R.id.btnCancel);
         etDescription = findViewById(R.id.etDescription);
         etDate = findViewById(R.id.etDate);
         etProcedures = findViewById(R.id.etProcedures);
         tvTitle = findViewById(R.id.tvTitle);
+        spinnerCaseType = findViewById(R.id.spinnerCaseType);
 
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
-
-        // التاريخ الافتراضي = اليوم
         etDate.setText(DateUtils.today());
-
-        // إعداد منتقي التاريخ
         etDate.setOnClickListener(v -> showDatePicker());
 
-        // إعداد زر إضافة الصورة (يظهر خيار الكاميرا أو المعرض)
+        // Setup Case Type Spinner
+        setupCaseSpinner();
+
+        // Setup image picker button
         btnPickPhoto.setOnClickListener(v -> {
             String[] options = {"التقاط صورة بالكاميرا", "اختيار من المعرض"};
             new AlertDialog.Builder(this)
                     .setTitle("إضافة صورة")
                     .setItems(options, (dialog, which) -> {
                         if (which == 0) {
-                            // التحقق من إذن الكاميرا
                             if (ContextCompat.checkSelfPermission(this, android.Manifest.permission.CAMERA) == android.content.pm.PackageManager.PERMISSION_GRANTED) {
                                 openCamera();
                             } else {
@@ -142,10 +152,9 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                     }).show();
         });
 
-        // إزالة الصورة
+        // Remove image button
         btnRemovePhoto.setOnClickListener(v -> {
             currentPhotoPath = null;
-            // إعادة تلوين الأيقونة الرمادية
             ivPhoto.setImageTintList(android.content.res.ColorStateList.valueOf(
                     androidx.core.content.ContextCompat.getColor(this, R.color.text_secondary)));
             ivPhoto.setImageResource(android.R.drawable.ic_menu_gallery);
@@ -153,18 +162,47 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
             btnRemovePhoto.setVisibility(View.GONE);
         });
 
-        // حفظ وإلغاء
         btnSave.setOnClickListener(v -> save());
         btnCancel.setOnClickListener(v -> finish());
 
-        // التحقق من وضع التعديل
+        // Check for Edit Mode
         editingId = getIntent().getIntExtra(EXTRA_ID, -1);
         if (editingId != -1) {
             loadExisting(editingId);
         }
     }
 
-    // ====== الوظائف المساعدة ======
+    /**
+     * Populates the AutoCompleteTextView with predefined cases from the database.
+     */
+    private void setupCaseSpinner() {
+        allCasesList = repo.cases().getAllCases();
+        List<String> caseNames = new ArrayList<>();
+        caseNames.add("غير محدد (حالة أخرى)"); // Default option
+
+        for (FirstAidCase c : allCasesList) {
+            caseNames.add(c.getTitle());
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                this, android.R.layout.simple_dropdown_item_1line, caseNames);
+        spinnerCaseType.setAdapter(adapter);
+
+        // Handle selection: Map the spinner position back to the Case ID
+        spinnerCaseType.setOnItemClickListener((parent, view, position, id) -> {
+            if (position == 0) {
+                selectedCaseId = null; // Unlinked
+            } else {
+                selectedCaseId = allCasesList.get(position - 1).getId();
+            }
+        });
+
+        spinnerCaseType.setOnClickListener(v -> spinnerCaseType.showDropDown());
+
+        spinnerCaseType.setText("غير محدد (حالة أخرى)", false);
+    }
+
+    // ====== Helper Methods ======
 
     private void loadExisting(int id) {
         TreatedCase t = repo.treated().getById(id);
@@ -174,6 +212,19 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
         etDescription.setText(t.getDescription());
         etDate.setText(t.getDate());
         etProcedures.setText(t.getProcedures());
+
+        // Restore the linked case if exists
+        if (t.getCaseId() != null) {
+            selectedCaseId = t.getCaseId();
+            for (int i = 0; i < allCasesList.size(); i++) {
+                if (allCasesList.get(i).getId() == selectedCaseId) {
+                    spinnerCaseType.setText(allCasesList.get(i).getTitle(), false);
+                    break;
+                }
+            }
+        } else {
+            spinnerCaseType.setText("غير محدد (حالة أخرى)", false);
+        }
 
         if (t.getPhotoPath() != null && new File(t.getPhotoPath()).exists()) {
             currentPhotoPath = t.getPhotoPath();
@@ -196,23 +247,15 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
         String date = text(etDate);
         String proc = text(etProcedures);
 
-        // ===== Validation =====
+        // Validation
         if (desc.isEmpty()) {
             etDescription.setError(getString(R.string.description_required));
             etDescription.requestFocus();
             return;
         }
-        if (desc.length() > 1000) {
-            etDescription.setError("الوصف طويل جداً (1000 حرف كحد أقصى)");
-            return;
-        }
         if (proc.isEmpty()) {
             etProcedures.setError(getString(R.string.procedures_required));
             etProcedures.requestFocus();
-            return;
-        }
-        if (proc.length() > 2000) {
-            etProcedures.setError("الإجراءات طويلة جداً (2000 حرف كحد أقصى)");
             return;
         }
         if (!isValidDate(date)) {
@@ -222,10 +265,11 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
 
         try {
             if (editingId == -1) {
-                TreatedCase t = new TreatedCase(0, null, desc, date, currentPhotoPath, proc);
+                // Pass selectedCaseId (can be null)
+                TreatedCase t = new TreatedCase(0, selectedCaseId, desc, date, currentPhotoPath, proc);
                 repo.treated().insert(t);
             } else {
-                TreatedCase t = new TreatedCase(editingId, null, desc, date, currentPhotoPath, proc);
+                TreatedCase t = new TreatedCase(editingId, selectedCaseId, desc, date, currentPhotoPath, proc);
                 repo.treated().update(t);
             }
             Toast.makeText(this, R.string.save_success, Toast.LENGTH_SHORT).show();
@@ -253,26 +297,13 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
         }
     }
 
-    // ====== إدارة الصور (الكاميرا والمعرض) ======
-
     private void openCamera() {
         try {
             File dir = new File(getFilesDir(), "treated_photos");
-            if (!dir.exists()) {
-                if (!dir.mkdirs()) {
-                    Log.e(TAG, "Failed to create directory");
-                    return;
-                }
-            }
+            if (!dir.exists() && !dir.mkdirs()) return;
 
             cameraPhotoFile = new File(dir, "cam_" + UUID.randomUUID() + ".jpg");
-
-            Uri uri = FileProvider.getUriForFile(
-                    this,
-                    getPackageName() + ".fileprovider",
-                    cameraPhotoFile
-            );
-
+            Uri uri = FileProvider.getUriForFile(this, getPackageName() + ".fileprovider", cameraPhotoFile);
             takePictureLauncher.launch(uri);
 
         } catch (Exception e) {
@@ -281,16 +312,12 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * نسخ الصورة المختارة من المعرض مع ضغطها لتجنّب OOM.
-     */
     private String copyImageToInternalStorage(Uri src) {
         try {
             File dir = new File(getFilesDir(), "treated_photos");
             if (!dir.exists() && !dir.mkdirs()) return null;
             File dst = new File(dir, "img_" + UUID.randomUUID() + ".jpg");
 
-            // 1. قراءة الأبعاد
             BitmapFactory.Options opts = new BitmapFactory.Options();
             opts.inJustDecodeBounds = true;
             try (InputStream boundsIn = getContentResolver().openInputStream(src)) {
@@ -298,14 +325,12 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
                 BitmapFactory.decodeStream(boundsIn, null, opts);
             }
 
-            // 2. حساب التصغير
             int maxDim = 1024;
             int sample = 1;
             while (opts.outWidth / sample > maxDim || opts.outHeight / sample > maxDim) {
                 sample *= 2;
             }
 
-            // 3. تحميل الصورة
             BitmapFactory.Options decodeOpts = new BitmapFactory.Options();
             decodeOpts.inSampleSize = sample;
             Bitmap bitmap;
@@ -315,12 +340,10 @@ public class AddTreatedCaseActivity extends AppCompatActivity {
             }
             if (bitmap == null) return null;
 
-            // 4. ضغط وحفظ
             try (OutputStream out = new FileOutputStream(dst)) {
                 bitmap.compress(Bitmap.CompressFormat.JPEG, 85, out);
             }
             bitmap.recycle();
-
             return dst.getAbsolutePath();
         } catch (Exception e) {
             Log.e(TAG, "copyImage failed", e);

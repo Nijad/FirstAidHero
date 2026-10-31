@@ -20,11 +20,17 @@ import com.svu.firstaidhero.ui.adapter.CaseAdapter;
 
 import java.util.List;
 
+/**
+ * Main entry point of the application.
+ * Displays a list of common first aid cases, provides an instant search bar,
+ * and allows navigation to other features (Contacts, Treated Cases, Statistics).
+ */
 public class MainActivity extends AppCompatActivity {
 
     private FirstAidRepository repo;
     private CaseAdapter adapter;
 
+    // UI Components
     private EditText etSearch;
     private ImageView btnClear;
     private TextView tvSectionTitle;
@@ -38,23 +44,25 @@ public class MainActivity extends AppCompatActivity {
 
         repo = FirstAidRepository.getInstance(this);
 
+        // Bind UI components
         etSearch = findViewById(R.id.etSearch);
         btnClear = findViewById(R.id.btnClearSearch);
         tvSectionTitle = findViewById(R.id.tvSectionTitle);
         tvEmpty = findViewById(R.id.tvEmpty);
         rvCases = findViewById(R.id.rvCases);
 
-        // إعداد القائمة
+        // Setup RecyclerView and Adapter
         adapter = new CaseAdapter(this::onCaseClicked);
         rvCases.setLayoutManager(new LinearLayoutManager(this));
         rvCases.setAdapter(adapter);
 
-        // إعداد البحث
+        // Setup real-time search functionality
         setupSearch();
 
-        // تحميل الحالات الشائعة افتراضيًا
+        // Load default list of common cases
         loadCommonCases();
 
+        // ===== Setup Navigation Buttons =====
         findViewById(R.id.btnContacts).setOnClickListener(v -> startActivity(new android.content.Intent(this,
                 com.svu.firstaidhero.ui.contacts.ContactsActivity.class)));
 
@@ -64,18 +72,22 @@ public class MainActivity extends AppCompatActivity {
         findViewById(R.id.btnStats).setOnClickListener(v -> startActivity(new android.content.Intent(this,
                 com.svu.firstaidhero.ui.stats.StatsActivity.class)));
 
-        // إعداد الزر العائم لفتح صفحة أرقام الطوارئ
+        // ===== Setup Floating Action Button (FAB) =====
+        // Navigates directly to the Emergency Contacts screen for quick access
         com.google.android.material.floatingactionbutton.FloatingActionButton fabEmergencyCall = findViewById(R.id.fabEmergencyCall);
         fabEmergencyCall.setOnClickListener(v -> {
-            // الانتقال إلى صفحة جهات الاتصال
             android.content.Intent intent = new android.content.Intent(this, com.svu.firstaidhero.ui.contacts.ContactsActivity.class);
             startActivity(intent);
         });
 
-        // إجبار التطبيق على RTL
+        // Force the entire layout to support Right-To-Left (RTL) for Arabic language
         getWindow().getDecorView().setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
     }
 
+    /**
+     * Initializes the search bar with a TextWatcher to perform instant filtering.
+     * Toggles the visibility of the clear (X) button and updates the section title.
+     */
     private void setupSearch() {
         etSearch.addTextChangedListener(new TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) { }
@@ -84,26 +96,41 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void afterTextChanged(Editable s) {
                 String q = s.toString().trim();
+
+                // Show clear button only if there is text
                 btnClear.setVisibility(q.isEmpty() ? View.GONE : View.VISIBLE);
+
                 if (q.isEmpty()) {
+                    // Revert to default view if search is empty
                     tvSectionTitle.setText(R.string.common_cases_title);
                     loadCommonCases();
                 } else {
+                    // Perform search if text is present
                     tvSectionTitle.setText("نتائج البحث");
                     performSearch(q);
                 }
             }
         });
 
+        // Clear search input when the X button is clicked
         btnClear.setOnClickListener(v -> etSearch.setText(""));
     }
 
+    /**
+     * Loads the pre-defined common cases from the database into the RecyclerView.
+     */
     private void loadCommonCases() {
         List<FirstAidCase> list = repo.cases().getCommonCases();
         adapter.setItems(list);
         updateEmpty(list.isEmpty(), getString(R.string.no_cases));
     }
 
+    /**
+     * Executes a database search based on the provided query.
+     * Wrapped in a try-catch block to ensure the app doesn't crash on unexpected DB errors.
+     *
+     * @param query The search term entered by the user.
+     */
     private void performSearch(String query) {
         if (query == null || query.trim().isEmpty()) {
             loadCommonCases();
@@ -120,6 +147,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Toggles the visibility between the RecyclerView and the empty state TextView.
+     *
+     * @param show    True to show the empty state, false to show the list.
+     * @param message The message to display in the empty state.
+     */
     private void updateEmpty(boolean show, String message) {
         if (show) {
             tvEmpty.setText(message);
@@ -131,6 +164,12 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Callback triggered when a case is clicked in the RecyclerView.
+     * Navigates to the CaseDetailsActivity, passing the selected case ID.
+     *
+     * @param c The selected FirstAidCase object.
+     */
     private void onCaseClicked(FirstAidCase c) {
         android.content.Intent i = new android.content.Intent(this,
                 com.svu.firstaidhero.ui.details.CaseDetailsActivity.class);

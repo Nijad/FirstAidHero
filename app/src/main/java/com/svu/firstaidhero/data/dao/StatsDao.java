@@ -7,8 +7,8 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * استعلامات إحصائية للتقارير.
- * يُستخدم COUNT + GROUP BY.
+ * Data Access Object (DAO) for handling statistical and analytical queries used in reports.
+ * Utilizes SQL aggregate functions such as COUNT and GROUP BY.
  */
 public class StatsDao {
 
@@ -18,7 +18,12 @@ public class StatsDao {
         this.db = db;
     }
 
-    /** عدد الحالات في كل درجة خطورة (من جدول الحالات المسبقة). */
+    /**
+     * Counts the number of pre-populated first aid cases for each severity level
+     * (e.g., critical, medium, minor).
+     *
+     * @return A Map containing severity levels as keys and their respective counts as values.
+     */
     public Map<String, Integer> countCasesBySeverity() {
         Map<String, Integer> map = new LinkedHashMap<>();
         Cursor c = db.rawQuery(
@@ -35,7 +40,13 @@ public class StatsDao {
         return map;
     }
 
-    /** عدد الحالات التي عالجها المستخدم لكل درجة خطورة. */
+    /**
+     * Counts the number of treated cases the user has logged, grouped by the severity
+     * of the original first aid case.
+     * Uses a LEFT JOIN to handle cases that might not be linked to a specific FirstAidCase.
+     *
+     * @return A Map containing severity levels (or 'unlinked') as keys and counts as values.
+     */
     public Map<String, Integer> countTreatedBySeverity() {
         Map<String, Integer> map = new LinkedHashMap<>();
         Cursor c = db.rawQuery(
@@ -47,6 +58,7 @@ public class StatsDao {
         try {
             while (c.moveToNext()) {
                 String key = c.getString(0);
+                // If the case is not linked to a FirstAidCase, assign it to 'unlinked'
                 if (key == null) key = "unlinked";
                 map.put(key, c.getInt(1));
             }
@@ -56,12 +68,21 @@ public class StatsDao {
         return map;
     }
 
-    /** إجمالي عدد الحالات المسجّلة. */
+    /**
+     * Retrieves the total number of treated cases recorded by the user.
+     *
+     * @return The total count of treated cases.
+     */
     public int getTotalTreatedCount() {
         return scalar("SELECT COUNT(*) FROM TreatedCases");
     }
 
-    /** عدد الحالات المُسجّلة في تاريخ معيّن. */
+    /**
+     * Counts the number of treated cases recorded on a specific date.
+     *
+     * @param date The date to query (expected format: yyyy-MM-dd).
+     * @return The number of cases recorded on the given date.
+     */
     public int getTreatedCountByDate(String date) {
         Cursor c = db.rawQuery(
                 "SELECT COUNT(*) FROM TreatedCases WHERE date = ?",
@@ -73,13 +94,23 @@ public class StatsDao {
         }
     }
 
-    /** عدد الأرقام المخصصة التي أضافها المستخدم. */
+    /**
+     * Counts the number of custom emergency contacts added by the user.
+     *
+     * @return The total count of custom contacts.
+     */
     public int getCustomContactsCount() {
         return scalar("SELECT COUNT(*) FROM EmergencyContacts WHERE type='custom'");
     }
 
-    // ================= Helper =================
+    // ================= Helper Methods =================
 
+    /**
+     * Helper method to execute a query that returns a single integer value (scalar).
+     *
+     * @param sql The SQL query string.
+     * @return The resulting integer value, or 0 if the result set is empty.
+     */
     private int scalar(String sql) {
         Cursor c = db.rawQuery(sql, null);
         try {
